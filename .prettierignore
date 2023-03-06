@@ -1,0 +1,18 @@
+.env.development
+.env.local
+.env.development
+.env.production
+
+# Editors and IDEs
+.idea/
+.vscode/
+
+# Some ingored files/directories
+node_modules/
+
+# Build
+dist/
+
+# Logs
+yarn-error.log
+yarn-debug.log*
