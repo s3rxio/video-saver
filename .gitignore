@@ -1,5 +1,4 @@
 # compiled output
-/out
 /dist
 /node_modules
 
@@ -19,12 +18,12 @@ lerna-debug.log*
 /coverage
 /.nyc_output
 
-# Temp files
-/temp
-
 # ENV
 .env
 .env.*
+
+# Formats
+*.mp4
 
 # IDEs and editors
 /.idea

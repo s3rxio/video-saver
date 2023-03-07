@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { YoutubeService } from "./youtube.service";
 import { IVideoFormat } from "./youtube.types";
 
@@ -12,12 +12,6 @@ export class YoutubeController {
 		id: string
 	) {
 		return this.youtubeService.getVideo(id);
-	}
-
-	@Get("format/:id")
-	// @Header("Content-type", "video/mp4")
-	getFormat(@Param("id") id: string) {
-		return this.youtubeService.getFormat(id);
 	}
 
 	@Post("format/concat")

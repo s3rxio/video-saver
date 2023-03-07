@@ -4,8 +4,6 @@ import { IVideoDetails, IVideoFormat, IVideoInfo } from "./youtube.types";
 import * as ffmpeg from "fluent-ffmpeg";
 import * as path from "path";
 import * as fs from "fs";
-import { downloadFile } from "../shared/utils";
-import { deleteFiles } from "./utils";
 
 @Injectable()
 export class YoutubeService {
@@ -35,45 +33,10 @@ export class YoutubeService {
 		};
 	}
 
-	getFormat(id: string): Buffer {
-		return fs.readFileSync(path.join(process.env.OUTPUT_DIR_PATH, id));
-	}
-
 	async concatFormats(formats: IVideoFormat[]): Promise<IVideoFormat> {
 		const command = ffmpeg();
-		const tempDir = path.join(process.cwd(), "temp");
-		const tempPaths = [];
 
-		await new Promise<boolean>((resolve, reject) => {
-			let downloadedFormatsLength = 0;
-
-			formats.forEach(async format => {
-				if (!fs.existsSync(tempDir)) await fs.mkdirSync(tempDir);
-
-				const tempPath = path.join(
-					tempDir,
-					`${Date.now()}.${format.container}`
-				);
-
-				await downloadFile(format.url, tempPath)
-					.then(() => {
-						command.addInput(tempPath);
-
-						downloadedFormatsLength++;
-						tempPaths.push(tempPath);
-						if (downloadedFormatsLength === formats.length) resolve(true);
-					})
-					.catch(async err => {
-						console.error(err);
-						await fs.unlinkSync(tempPath);
-						reject(err);
-						throw new HttpException(
-							"Internal Server Error",
-							HttpStatus.INTERNAL_SERVER_ERROR
-						);
-					});
-			});
-		});
+		for (const format of formats) command.addInput(format.url);
 
 		if (!fs.existsSync(process.env.OUTPUT_DIR_PATH))
 			await fs.mkdirSync(process.env.OUTPUT_DIR_PATH);
@@ -87,7 +50,6 @@ export class YoutubeService {
 				.save(outputPath)
 				.on("error", err => {
 					console.error(err);
-					deleteFiles(...tempPaths);
 					reject(
 						new HttpException(
 							"Internal Server Error",
@@ -96,12 +58,8 @@ export class YoutubeService {
 					);
 				})
 				.on("end", () => {
-					deleteFiles(...tempPaths);
-
 					resolve({
-						url: `${process.env.API_URL}/youtube/format/${
-							outputFileName.split(".")[0]
-						}`,
+						url: `${process.env.API_URL}/formats/${outputFileName}`,
 						qualityLabel: "1080p60",
 						container: "mp4",
 						hasVideo: true,
